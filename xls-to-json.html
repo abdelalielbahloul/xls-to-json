@@ -36,44 +36,64 @@
                 </div>
             </div>
             <div class="col-md-6 mt-4" id="preview-div">
-                <h2>Preview:</h2>
+                <div class="row">
+                    <div class="col-md-6">
+                        <h2>Preview:</h2>
+                    </div>
+                    <div class="col-md-6 text-right">
+                        <button type="button" id="copyBtn" class="btn btn-primary pull-right" data-toggle="tooltip" data-placement="top" title="Copy">Copy</button>
+                    </div>
+                </div>
                 <pre class="mt-4" id="result"></pre>
+                <textarea id="textarea"></textarea>
             </div>
             <div class="col-md-2"></div>
 
         </div>
     </div>
-    <!-- <input type="file" id="input" accept=".xls,.xlsx,.ods"> -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.14.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.min.js" integrity="sha384-+YQ4JLhjyBLPDQt//I+STsc9iw4uQqACwlvpslubQzn4u2UU2UFM80nGisd026JF" crossorigin="anonymous"></script>
     <script>
         $(document).ready(function(){
             $('#preview-div').hide()
-            $("#input").on("change", function (e) {
-                var file = e.target.files[0];
-                // input canceled, return
+            $("#textarea").hide()
+            $("#input").on("change", (e) => {
+                let file = e.target.files[0];
                 if (!file) return;
                 
-                var FR = new FileReader();
+                let FR = new FileReader();
                 FR.onload = function(e) {
-                    var data = new Uint8Array(e.target.result);
-                    var workbook = XLSX.read(data, {type: 'array'});
-                    var firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    let data = new Uint8Array(e.target.result);
+                    let workbook = XLSX.read(data, {type: 'array'});
+                    let firstSheet = workbook.Sheets[workbook.SheetNames[0]];
                     
                     // header:  1	Generate an array of arrays ("2D Array")
                     //          "A"	Row object keys are literal column labels
                     //           array of strings	Use specified strings as keys in row objects
                     //          (default)	Read and disambiguate first row as keys
-                    var result = XLSX.utils.sheet_to_json(firstSheet);
+                    let result = XLSX.utils.sheet_to_json(firstSheet);
                     
-                    // data preview
-                    var output = document.getElementById('result');
+                    let output = document.getElementById('result');
                     output.innerHTML = JSON.stringify(result, null, 2);
                     $('#preview-div').show()
                 };
                 FR.readAsArrayBuffer(file);
             });
+            $('#copyBtn').on("click", (e) => {
+                const copyText = document.getElementById("result").textContent;
+                const textArea = document.getElementById('textarea');
+                textArea.textContent = copyText;
+                $("#textarea").show()
+                    textArea.select();
+                    document.execCommand("copy");
+                $("#textarea").hide()
+                let btn = document.getElementById('copyBtn')
+                btn.setAttribute('title', 'Copied')
+                setTimeout(() => {
+                    btn.setAttribute('title', 'Copy')
+                }, 3000);
+            })
         });
     </script>
 </body>
